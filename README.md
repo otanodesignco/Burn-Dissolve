@@ -1,13 +1,13 @@
-# Matcap Material
-I know that three.js & react-three-fiber have their own matcap materials. This is part of my journey learning about shaders and I created this matcap material myself as part of that journey. Feel free to check out the code if you've ever wondered how it's done.
+# Burn Dissolve Shader
+Burn dissolve shader using simplex noise and some shader magic. This effect is using react--three-fiber. I have removed the controls for the effects for this one because it can get ugly with the min/max setting I had. Hope you find it useful.
 
-Matcap mapping demo
+Burn Dissolve Demo
 
-![Matcap](https://github.com/otanodesignco/Fresnel-Shader-Material/blob/main/matcap.png?raw=true)
+![Burn dissolve front](https://github.com/otanodesignco/Burn-Dissolve/blob/main/burn2.png?raw=true)
 
 
 
-![Matcap profile view](https://github.com/otanodesignco/Fresnel-Shader-Material/blob/main/matcap1.png?raw=true)
+![Burn dissolve profile view](https://github.com/otanodesignco/Burn-Dissolve/blob/main/burn1.png?raw=true)
 
 to use:
 
