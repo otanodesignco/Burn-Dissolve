@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { useControls } from "leva"
 import { useRef } from "react"
-import { Color, ShaderMaterial } from "three"
+import { AdditiveBlending, Color, DoubleSide, ShaderMaterial } from "three"
 
  // uniforms
  const uniforms =
@@ -187,7 +187,7 @@ float remap(float value, float min1, float max1, float min2, float max2)
         vertexShader: vertex,
         fragmentShader: fragment,
         uniforms: uniforms,
-        transparent: true
+        transparent: true,
     }
  )
 
