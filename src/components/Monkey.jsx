@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { useControls } from "leva"
 import { useRef } from "react"
-import { Box3, Color, ShaderMaterial, Vector2, Vector4 } from "three"
+import { Box3, Color, ShaderMaterial, Vector4 } from "three"
 
  // uniforms
  const uniforms =
@@ -12,7 +12,7 @@ import { Box3, Color, ShaderMaterial, Vector2, Vector4 } from "three"
      uBurnScale: { value: 20 },
      uBurnOffset: { value: 8 },
      uColor: { value: new Color('#592e83') },
-     uBorderColor: { value: new Color('#8aea92').multiplyScalar( 20 ) },
+     uBorderColor: { value: new Color('#ff6600').multiplyScalar( 20 ) },
      uBoundingBox: { value: new Vector4() }
  }
 
@@ -146,6 +146,9 @@ float remap(float value, float min1, float max1, float min2, float max2)
      // uv as world space coordinates x & y
      vec2 uv = vModelPosition.xy;
 
+     uv.x = remap( uv.x, uBoundingBox.x, uBoundingBox.z, 0.0, 1.0 );
+     uv.y = remap( uv.y, uBoundingBox.y, uBoundingBox.w, 0.0, 1.0 );
+
      // create diffuse shading based on camera position & world normals
      float diffuse = dot( vNormal, vViewDirection );
 
@@ -159,16 +162,15 @@ float remap(float value, float min1, float max1, float min2, float max2)
      noise *= ( uBurnOffset * 0.01 );
 
      // remap values within 0 - 1
-     float mappedNoise = ( noise + 1.0 ) * 1.;
+     float mappedNoise = ( noise * 1.0 ) + 1.0;
 
      // calculate the movement direction
-     float motion = ( 1.0 + dot( vModelPosition, normalize( vec3( 0., -1., 0. ) ) ) ) / 2.0;
+    float direction = vModelPosition.y;
 
-     // reverse the visible color
-     motion = 1.0 - motion;
+    direction = pow( ( direction + 1.0 ) * .5, 2.0 );
 
      // create animated burn
-     float animateNoise = mappedNoise * motion;
+     float animateNoise = mappedNoise * direction;
 
      // animate noise based on progress
      float noiseTexture = step( uProgress, animateNoise );
@@ -207,7 +209,7 @@ export default function Monkey( props )
     const box = new Box3().setFromObject( nodes.Suzanne )
 
     // controls
-    const { progress } = useControls(
+    const { progress, scale, offset, color, burnColor } = useControls(
         {
             progress:
             {
@@ -215,6 +217,28 @@ export default function Monkey( props )
                 min: 0,
                 max: 1,
                 step: 0.001
+            },
+            scale:
+            {
+              value: 10,
+              min: 5,
+              max: 20,
+              step: 0.001
+            },
+            offset:
+            {
+              value: 3,
+              min:1,
+              max: 10,
+              step: 0.001
+            },
+            color:
+            {
+              value: '#592e83'
+            },
+            burnColor:
+            {
+              value: '#ff6600'
             }
         }
     )
@@ -230,6 +254,10 @@ export default function Monkey( props )
         const boxMax = box.max
 
         monkey.current.material.uniforms.uProgress.value = progress
+        monkey.current.material.uniforms.uBurnScale.value = scale
+        monkey.current.material.uniforms.uBurnOffset.value = offset
+        monkey.current.material.uniforms.uColor.value = new Color( color )
+        monkey.current.material.uniforms.uBorderColor.value = new Color( burnColor ).multiplyScalar( 20 )
         monkey.current.material.uniforms.uBoundingBox.value = new Vector4( boxMin.x, boxMin.y, boxMax.x, boxMax.y )
 
     })
