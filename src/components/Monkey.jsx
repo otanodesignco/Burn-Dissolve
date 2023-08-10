@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { useControls } from "leva"
 import { useRef } from "react"
-import { Box3, Color, ShaderMaterial, Vector4 } from "three"
+import { Color, ShaderMaterial } from "three"
 
  // uniforms
  const uniforms =
@@ -13,7 +13,6 @@ import { Box3, Color, ShaderMaterial, Vector4 } from "three"
      uBurnOffset: { value: 8 },
      uColor: { value: new Color('#592e83') },
      uBorderColor: { value: new Color('#ff6600').multiplyScalar( 20 ) },
-     uBoundingBox: { value: new Vector4() }
  }
 
  const vertex = /*glsl*/`
@@ -51,7 +50,6 @@ void main()
  uniform float uThickness;
  uniform vec3 uColor;
  uniform vec3 uBorderColor;
- uniform vec4 uBoundingBox;
 
  in vec3 vModelPosition;
  in vec3 vViewDirection;
@@ -146,9 +144,6 @@ float remap(float value, float min1, float max1, float min2, float max2)
      // uv as world space coordinates x & y
      vec2 uv = vModelPosition.xy;
 
-     uv.x = remap( uv.x, uBoundingBox.x, uBoundingBox.z, 0.0, 1.0 );
-     uv.y = remap( uv.y, uBoundingBox.y, uBoundingBox.w, 0.0, 1.0 );
-
      // create diffuse shading based on camera position & world normals
      float diffuse = dot( vNormal, vViewDirection );
 
@@ -165,7 +160,7 @@ float remap(float value, float min1, float max1, float min2, float max2)
      float mappedNoise = ( noise * 1.0 ) + 1.0;
 
      // calculate the movement direction
-    float direction = vModelPosition.y;
+    float direction = uv.y;
 
     direction = pow( ( direction + 1.0 ) * .5, 2.0 );
 
@@ -201,12 +196,6 @@ export default function Monkey( props )
 
     // import model
     const { nodes } = useGLTF('./models/Monkey.glb')
-
-    nodes.Suzanne.geometry.computeBoundingBox()
-
-    console.log( nodes.Suzanne.geometry.boundingBox.applyMatrix4( nodes.Suzanne.matrixWorld ) )
-
-    const box = new Box3().setFromObject( nodes.Suzanne )
 
     // controls
     const { progress, scale, offset, color, burnColor } = useControls(
@@ -248,17 +237,11 @@ export default function Monkey( props )
     useFrame( ( state ) =>
     {
 
-        box.copy( nodes.Suzanne.geometry.boundingBox ).applyMatrix4( nodes.Suzanne.matrixWorld )
-
-        const boxMin = box.min
-        const boxMax = box.max
-
         monkey.current.material.uniforms.uProgress.value = progress
         monkey.current.material.uniforms.uBurnScale.value = scale
         monkey.current.material.uniforms.uBurnOffset.value = offset
         monkey.current.material.uniforms.uColor.value = new Color( color )
         monkey.current.material.uniforms.uBorderColor.value = new Color( burnColor ).multiplyScalar( 20 )
-        monkey.current.material.uniforms.uBoundingBox.value = new Vector4( boxMin.x, boxMin.y, boxMax.x, boxMax.y )
 
     })
 
