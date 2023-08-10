@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { useControls } from "leva"
 import { useRef } from "react"
-import { Color, ShaderMaterial } from "three"
+import { Box3, Color, ShaderMaterial, Vector2, Vector4 } from "three"
 
  // uniforms
  const uniforms =
@@ -12,7 +12,8 @@ import { Color, ShaderMaterial } from "three"
      uBurnScale: { value: 20 },
      uBurnOffset: { value: 8 },
      uColor: { value: new Color('#592e83') },
-     uBorderColor: { value: new Color('#8aea92').multiplyScalar( 20 ) }
+     uBorderColor: { value: new Color('#8aea92').multiplyScalar( 20 ) },
+     uBoundingBox: { value: new Vector4() }
  }
 
  const vertex = /*glsl*/`
@@ -50,6 +51,7 @@ void main()
  uniform float uThickness;
  uniform vec3 uColor;
  uniform vec3 uBorderColor;
+ uniform vec4 uBoundingBox;
 
  in vec3 vModelPosition;
  in vec3 vViewDirection;
@@ -130,6 +132,14 @@ float snoise(vec3 v){
                                 dot(p2,x2), dot(p3,x3) ) );
 }
 
+// remap
+float remap(float value, float min1, float max1, float min2, float max2) 
+{
+
+  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+
+}
+
  void main()
  {
 
@@ -149,7 +159,7 @@ float snoise(vec3 v){
      noise *= ( uBurnOffset * 0.01 );
 
      // remap values within 0 - 1
-     float mappedNoise = ( noise + 1.0 ) * 0.5;
+     float mappedNoise = ( noise + 1.0 ) * 1.;
 
      // calculate the movement direction
      float motion = ( 1.0 + dot( vModelPosition, normalize( vec3( 0., -1., 0. ) ) ) ) / 2.0;
@@ -165,9 +175,6 @@ float snoise(vec3 v){
 
      // create noise border
      float noiseBorder = step( uProgress  - uThickness, animateNoise ) - noiseTexture;
-
-     // burn noise as a color
-     vec3 noiseColor = diffuseColor * noiseTexture;
 
      vec3 finalColor = mix( diffuseColor, uBorderColor, noiseBorder );
 
@@ -193,6 +200,12 @@ export default function Monkey( props )
     // import model
     const { nodes } = useGLTF('./models/Monkey.glb')
 
+    nodes.Suzanne.geometry.computeBoundingBox()
+
+    console.log( nodes.Suzanne.geometry.boundingBox.applyMatrix4( nodes.Suzanne.matrixWorld ) )
+
+    const box = new Box3().setFromObject( nodes.Suzanne )
+
     // controls
     const { progress } = useControls(
         {
@@ -211,7 +224,13 @@ export default function Monkey( props )
     useFrame( ( state ) =>
     {
 
+        box.copy( nodes.Suzanne.geometry.boundingBox ).applyMatrix4( nodes.Suzanne.matrixWorld )
+
+        const boxMin = box.min
+        const boxMax = box.max
+
         monkey.current.material.uniforms.uProgress.value = progress
+        monkey.current.material.uniforms.uBoundingBox.value = new Vector4( boxMin.x, boxMin.y, boxMax.x, boxMax.y )
 
     })
 
