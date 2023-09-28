@@ -1,5 +1,4 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import { Experience } from "./components/Experience";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { SRGBColorSpace } from "three";
@@ -11,7 +10,6 @@ function App() {
       camera={{ position: [0, 0, 5], fov: 30 }}
       gl={{ outputColorSpace: SRGBColorSpace }}
     >
-      <OrbitControls makeDefault />
       <color attach="background" args={["#353640"]} />
       <Experience />
       <EffectComposer>

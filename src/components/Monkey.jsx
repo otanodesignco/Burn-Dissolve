@@ -162,7 +162,7 @@ float remap(float value, float min1, float max1, float min2, float max2)
      // calculate the movement direction
     float direction = uv.y;
 
-    direction = pow( ( direction + 1.0 ) * .5, 2.0 );
+    //direction = pow( ( direction + 1.0 ) * .5, 2.0 );
 
      // create animated burn
      float animateNoise = mappedNoise * direction;
