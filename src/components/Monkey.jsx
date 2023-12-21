@@ -108,7 +108,7 @@ export default function Monkey( props )
     const { nodes } = useGLTF('./models/Monkey.glb')
 
     // controls
-    const { progress, scale, offset, color, burnColor, burnWidth } = useControls(
+    const { progress, scale, offset, color, burnColor, burnColorEnd, burnWidth } = useControls(
         {
             progress:
             {
@@ -136,6 +136,10 @@ export default function Monkey( props )
               value: '#592e83'
             },
             burnColor:
+            {
+              value: '#ff6600'
+            },
+            burnColorEnd:
             {
               value: '#ff6600'
             },
@@ -167,6 +171,7 @@ export default function Monkey( props )
                 burnProgress={ progress }
                 baseColor={ color }
                 burnColor={ burnColor }
+                burnColorEnd={ burnColorEnd }
                 burnAmt={ scale }
                 burnOffset={ offset }
                 burnWidth={ burnWidth }

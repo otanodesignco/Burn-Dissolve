@@ -6,7 +6,8 @@ import { BackSide, FrontSide, DoubleSide, Color } from "three";
 
 export default function BurnMaterial({
     burnColor = '#ff6600', // burn color
-    burnIntensity = 15, // intensity for glow
+    burnColorEnd = '#ff6600', // end of burn color
+    burnIntensity = 2, // intensity for glow
     baseColor = '#592e83', // base color
     burnWidth = 1, // width of the burn effect
     burnAmt = 15, // amout to displace noise
@@ -40,7 +41,8 @@ export default function BurnMaterial({
     const uniforms =
     {
         uBurnColor : new Color( burnColor ).multiplyScalar( burnIntensity ),
-        uBaseColor : new Color ( baseColor ),
+        uBurnColorEnd: new Color( burnColorEnd ).multiplyScalar( burnIntensity ),
+        uBaseColor : new Color( baseColor ),
         uBurnWidth: burnWidth,
         uBurnAmt : burnAmt,
         uBurnSize : burnSize,
@@ -74,6 +76,7 @@ export default function BurnMaterial({
 
     const fragmentShader = /*glsl*/`
     uniform vec3 uBurnColor;
+    uniform vec3 uBurnColorEnd;
     uniform vec3 uBaseColor;
     uniform float uBurnAmt;
     uniform float uBurnWidth;
@@ -192,7 +195,10 @@ export default function BurnMaterial({
         float diffuse = lambertLighting( vObjectNormals, vView ); // lambert lighting calculation
         diffuseColor *= diffuse;
 
-        vec3 finalColor = mix( diffuseColor, uBurnColor, burn ); // final color for mesh
+        float burnColorGradient = smoothstep( ( progress - noise ) + burnThicc * 1. , ( progress - noise ) - burnThicc , direction );
+        vec3 burnColor = mix( uBurnColor , uBurnColorEnd ,  1. - burnColorGradient );
+
+        vec3 finalColor = mix( diffuseColor, burnColor, burn ); // final color for mesh
 
         gl_FragColor = vec4( finalColor, transition );
 
